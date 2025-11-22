@@ -99,8 +99,11 @@ int LD245X::read(bool waitAvailable)
             return readDataCommandAck();
         }
 
-        nrValidTargets = parseRadarFrame();
-        if (nrValidTargets > 0) return nrValidTargets;
+        int8_t result = parseRadarFrame();
+        if (result > 0) {
+            nrValidTargets = result;
+            return nrValidTargets;
+        }
     }
     return -1;
 }
