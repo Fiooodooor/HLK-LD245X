@@ -11,7 +11,8 @@ namespace esphome::ld245x {
 class LD2451 : public LD245X {
 public:
     LD2451();
-    int readDataRadarOutput() override;
+    void setFactorySetting() override;
+    int parseRadarFrame() override;
 };
 
 }

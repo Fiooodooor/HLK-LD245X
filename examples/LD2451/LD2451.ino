@@ -25,13 +25,25 @@ void setup() {
   ld2451Serial.setTimeout(1000);
   LOG_INFO_FTS("LD2451, HardwareSerial(1) waiting for sensor data...\n");
   ld2451.begin(ld2451Serial);
+
+  ld2451.beginConfigurationSession();
+  ld2451.queryFirmwareVersion();
+  ld2451.queryMacAddress();
+  ld2451.endConfigurationSession();
+
+  LOG_INFO_FTS("Sensor name: '%s'\n", ld2451.getNameString());
+  LOG_INFO_FTS("Firmware value: '%s'\n", ld2451.getFirmwareString());
+  LOG_INFO_FTS("MacAddress value: '%s'\n", ld2451.getMacAddressString());
 }
 
 void loop()
 {
-  int sensor_got_valid_targets = ld2451.read();
-  while(0<sensor_got_valid_targets--) {
-    auto target = ld2451.getTarget(sensor_got_valid_targets);
-    Serial.println(target.format().c_str());
+  int sensor_got_valid_targets;
+  if(ld2451.update()) {
+    sensor_got_valid_targets = ld2451.getNrValidTargets();
+    while(0<sensor_got_valid_targets--) {
+      auto target = ld2451.getTarget(sensor_got_valid_targets);
+      Serial.println(target.format().c_str());
+    }
   }
 }

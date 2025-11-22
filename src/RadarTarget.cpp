@@ -1,4 +1,5 @@
 #include "RadarTarget.hpp"
+#include <math.h>
 
 namespace esphome::ld245x
 {

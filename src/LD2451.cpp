@@ -8,16 +8,24 @@ namespace esphome::ld245x {
 /* --------------------------------------------------------------------- */
 LD2451::LD2451()
     : LD245X(
-        HLK_LD2451, LD2451_MAX_SENSOR_TARGETS, LD2451_TARGET_SIZE,
+        SensorModel::LD2451, BaudRate::BAUD_115200,
+        LD2451_MAX_SENSOR_TARGETS, LD2451_TARGET_SIZE,
         reinterpret_cast<const uint8_t*>("\xFD\xFC\xFB\xFA"),
         reinterpret_cast<const uint8_t*>("\x04\x03\x02\x01"),
         reinterpret_cast<const uint8_t*>("\xF4\xF3\xF2\xF1"),
         reinterpret_cast<const uint8_t*>("\xF8\xF7\xF6\xF5"))
 {
+    setFactorySetting();
 }
 
 /* --------------------------------------------------------------------- */
-int LD2451::readDataRadarOutput()
+void LD2451::setFactorySetting()
+{
+    _baudRate = BaudRate::BAUD_115200;
+    _bluetoothEnabled = true;
+}
+
+int LD2451::parseRadarFrame()
 {
     if (rs->available() < 2) return -4;
 
