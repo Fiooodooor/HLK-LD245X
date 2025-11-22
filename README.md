@@ -1,5 +1,8 @@
 # HLK-LD245X
 
+[![License](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Fiooodooor/HLK-LD245X)](https://github.com/Fiooodooor/HLK-LD245X/releases)  
+
 ## Description
 
 The HLK-LD245X library provides an easy-to-use Arduino interface for the Hi-Link LD2450 and LD2451 mmWave radar sensors. These sensors are designed for human presence detection, motion tracking, and zone-based occupancy monitoring. The library handles serial communication (UART) to configure the sensors and parse their output data, including target positions, speeds, and detection zones.
@@ -159,13 +162,15 @@ Contributions are welcome! Please fork the repository, make changes, and submit 
 
 ## License
 
-This library is distributed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the **BSD 3-Clause** License. See the [LICENSE](LICENSE) file for details.
 
 ## Credits
 
-- Original implementation by Fiooodooor.
-- Based on Hi-Link LD245X sensor documentation.
+* Original library implementation by *Fiooodooor*.
+* Based on the official Hi-Link LD2450 / LD2451 sensor documentation and protocol.
+* Thanks to the open-source Arduino and PlatformIO communities for examples and tooling support.
 
 ---
 
 *Library compliant with Arduino Library Manager requirements: Valid ZIP structure, examples, proper keywords in `library.properties`, and no external dependencies.*
+
