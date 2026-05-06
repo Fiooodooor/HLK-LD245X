@@ -1,7 +1,7 @@
 #ifndef __LD245X_hpp
 #define __LD245X_hpp
 
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266) || defined(FORCE_HARDWARE_SERIAL)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_AVR) || defined(FORCE_HARDWARE_SERIAL)
   #include <HardwareSerial.h>
   #define SERIAL_TYPE HardwareSerial
 #else
