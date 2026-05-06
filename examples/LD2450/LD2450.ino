@@ -4,17 +4,6 @@
   #include <WProgram.h>
 #endif
 
-// For AVR, use HardwareSerial instead of SoftwareSerial
-#if !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_ESP8266)
-  #define FORCE_HARDWARE_SERIAL
-#endif
-
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
-  #include <HardwareSerial.h>
-#else
-  #include <SoftwareSerial.h>
-#endif
-
 #include <LD2450.hpp>
 #define RXP2 16
 #define TXP2 17

@@ -1,7 +1,7 @@
 #ifndef __LD245X_hpp
 #define __LD245X_hpp
 
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266) || defined(FORCE_HARDWARE_SERIAL)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_AVR) || defined(FORCE_HARDWARE_SERIAL)
   #include <HardwareSerial.h>
   #define SERIAL_TYPE HardwareSerial
 #else
@@ -166,13 +166,12 @@ protected:
     Stream* rs = nullptr;
     RadarTarget rt[MAX_TARGETS];
     uint8_t nrValidTargets = 0;
+    const uint8_t dataTargetsCount;
+    const uint8_t dataTargetSize;
     SensorModel _sensorModel = SensorModel::Unknown;
     BaudRate _baudRate = BaudRate::BAUD_256000;
     LD245X_Commands _lastCmd = LD245X_Commands::_Count;
     bool _bluetoothEnabled = true;
-
-    const uint8_t dataTargetsCount;
-    const uint8_t dataTargetSize;
 
     int frameBufferBytesRead = 0;
 

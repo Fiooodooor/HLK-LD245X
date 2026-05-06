@@ -161,7 +161,7 @@ bool LD2420::queryFirmwareVersion()
     if (retCmd != 0x0100 || retVal != 0) return false;
 
     uint16_t strLen = word(frameBuffer[5], frameBuffer[4]);
-    if (frameBufferBytesRead < 6 + strLen) return false;
+    if (frameBufferBytesRead < static_cast<int>(6 + strLen)) return false;
 
     snprintf(ld2420_firmware_string, sizeof(ld2420_firmware_string),
              "%.*s", strLen, reinterpret_cast<const char*>(frameBuffer + 6));
