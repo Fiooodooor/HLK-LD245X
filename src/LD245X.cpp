@@ -24,10 +24,10 @@ LD245X::LD245X(SensorModel sensorModel, BaudRate baudRate,
         dataSeqEnd
       },
       frameIndicatorsLen{
-        static_cast<const uint8_t>(strlen(reinterpret_cast<const char*>(cmdSeqStart))),
-        static_cast<const uint8_t>(strlen(reinterpret_cast<const char*>(cmdSeqEnd))),
-        static_cast<const uint8_t>(strlen(reinterpret_cast<const char*>(dataSeqStart))),
-        static_cast<const uint8_t>(strlen(reinterpret_cast<const char*>(dataSeqEnd)))
+        static_cast<uint8_t>(strlen(reinterpret_cast<const char*>(cmdSeqStart))),
+        static_cast<uint8_t>(strlen(reinterpret_cast<const char*>(cmdSeqEnd))),
+        static_cast<uint8_t>(strlen(reinterpret_cast<const char*>(dataSeqStart))),
+        static_cast<uint8_t>(strlen(reinterpret_cast<const char*>(dataSeqEnd)))
       }
 {
     TRACE_FUNC();
