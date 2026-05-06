@@ -54,7 +54,7 @@ jobs:
 
       - name: Compile ${{ matrix.example }} example
         run: |
-          arduino-cli compile --fqbn ${{ matrix.board.fqbn }} --warnings all \
+          arduino-cli compile --fqbn ${{ matrix.board.fqbn }} --warnings more \
             ${{ github.workspace }}/examples/${{ matrix.example }}/${{ matrix.example }}.ino
 
   lint-check:
