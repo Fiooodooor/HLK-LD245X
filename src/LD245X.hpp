@@ -181,7 +181,7 @@ protected:
     int16_t firmwareType     = {0};
     uint8_t mac_bytes[6]     = {0};
     char    mac_string[18]   = {'\0'};
-    
+
     uint8_t frameBuffer[512] = {'\0'};
 
     /* ----- sequence buffers (copied in ctor) -------------------------- */
