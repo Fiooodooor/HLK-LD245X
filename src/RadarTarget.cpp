@@ -71,11 +71,15 @@ int RadarTarget::setFromRaw5Bytes(const uint8_t* bytes, uint8_t len, uint8_t id)
   if (!bytes || len < 5) return -2;
 
   this->id = id;
-  this->angle = (int16_t)(bytes[0]-0x80);
+  this->angle = static_cast<int16_t>(bytes[0] - 0x80);
   this->d = bytes[1];
-  this->v = bytes[3]*(bytes[2]==0x00?1:-1);
-  this->x = (int16_t)roundf(this->d*cos(this->angle*(180.0f / M_PI)));
-  this->y = (int16_t)roundf(this->d*sin(this->angle*(180.0f / M_PI)));
+  this->v = bytes[3] * (bytes[2] == 0x00 ? 1 : -1);
+
+  // Convert angle from degrees to radians for trig functions
+  float angle_rad = this->angle * (M_PI / 180.0f);
+  this->x = static_cast<int16_t>(roundf(this->d * cosf(angle_rad)));
+  this->y = static_cast<int16_t>(roundf(this->d * sinf(angle_rad)));
+
   this->snr = bytes[4];
   this->valid = true;
   return 0;

@@ -230,25 +230,41 @@ bool LD2450::setZoneFilter(ZoneFiltering zf, ZoneCoordinates z1, ZoneCoordinates
 const char* LD2450::getZoneFilter()
 {
     size_t copied = 0;
+    const size_t bufSize = sizeof(zone_string);
+
     if (static_cast<uint8_t>(_zoneFiltering) == 0x00) {
-        copied = snprintf(zone_string, sizeof(zone_string), "[\"ZoneFiltering\":\"Disabled\"");
+        copied = snprintf(zone_string, bufSize, "[\"ZoneFiltering\":\"Disabled\"");
     }
     else if (static_cast<uint8_t>(_zoneFiltering) == 0x01) {
-        copied = snprintf(zone_string, sizeof(zone_string), "[\"ZoneFiltering\":\"AreaOnly\"");
+        copied = snprintf(zone_string, bufSize, "[\"ZoneFiltering\":\"AreaOnly\"");
     }
     else if (static_cast<uint8_t>(_zoneFiltering) == 0x02) {
-        copied = snprintf(zone_string, sizeof(zone_string), "[\"ZoneFiltering\":\"AreaExcluded\"");
+        copied = snprintf(zone_string, bufSize, "[\"ZoneFiltering\":\"AreaExcluded\"");
     } else {
-        copied = snprintf(zone_string, sizeof(zone_string), "[\"ZoneFiltering\":\"AreaExcluded\"");
+        copied = snprintf(zone_string, bufSize, "[\"ZoneFiltering\":\"Unknown\"");
     }
-    for(uint8_t i = 0; i < 3; ++i) {
-        zone_string[copied++] = ',';
-        copied += snprintf(zone_string+copied, sizeof(zone_string)-copied,
+
+    for(uint8_t i = 0; i < 3 && copied + 2 < bufSize; ++i) {
+        if (copied < bufSize) {
+            zone_string[copied++] = ',';
+        }
+        int written = snprintf(zone_string + copied, bufSize - copied,
                     "\"z%d\":{\"x1\":%d,\"y1\":%d,\"x2\":%d,\"y2\":%d}",
                     i, _zones[i].x1, _zones[i].y1, _zones[i].x2, _zones[i].y2);
+        if (written > 0) {
+            copied += written;
+        }
     }
-    zone_string[copied++] = ']';
-    zone_string[copied++] = '\0';
+
+    if (copied < bufSize - 1) {
+        zone_string[copied++] = ']';
+    }
+    if (copied < bufSize) {
+        zone_string[copied] = '\0';
+    } else {
+        zone_string[bufSize - 1] = '\0';
+    }
+
     LOG_DEBUG_FTS("ZoneFilteringString: %s \n", zone_string);
     return zone_string;
 }
