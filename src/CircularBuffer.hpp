@@ -92,8 +92,10 @@ public:
      * @return true if successful, false if offset is beyond available data
      */
     bool peek(T& item, size_t offset = 0) const {
-        if (offset >= count) return false;
-        size_t pos = (tail + offset) % SIZE;
+        size_t c = count;  // Read volatile once
+        if (offset >= c) return false;
+        size_t t = tail;  // Read volatile once
+        size_t pos = (t + offset) % SIZE;
         item = buffer[pos];
         return true;
     }
@@ -105,9 +107,10 @@ public:
      * @return Offset from tail where pattern starts, or -1 if not found
      */
     int find(const T* pattern, size_t patternLen) const {
-        if (!pattern || patternLen > count || patternLen == 0) return -1;
+        size_t c = count;  // Read volatile once
+        if (!pattern || patternLen > c || patternLen == 0) return -1;
 
-        size_t searchLen = count - patternLen + 1;
+        size_t searchLen = c - patternLen + 1;
         for (size_t i = 0; i < searchLen; i++) {
             bool match = true;
             for (size_t j = 0; j < patternLen; j++) {
@@ -144,11 +147,23 @@ public:
     }
 
     // Query methods
-    size_t available() const { return count; }
+    size_t available() const {
+        size_t c = count;  // Read volatile once
+        return c;
+    }
     size_t capacity() const { return SIZE; }
-    size_t freeSpace() const { return SIZE - count; }
-    bool isEmpty() const { return count == 0; }
-    bool isFull() const { return count >= SIZE; }
+    size_t freeSpace() const {
+        size_t c = count;  // Read volatile once
+        return SIZE - c;
+    }
+    bool isEmpty() const {
+        size_t c = count;  // Read volatile once
+        return c == 0;
+    }
+    bool isFull() const {
+        size_t c = count;  // Read volatile once
+        return c >= SIZE;
+    }
 
     /**
      * @brief Statistics structure for debugging and monitoring
@@ -163,7 +178,8 @@ public:
      * @brief Update statistics based on current buffer state
      */
     void updateStats() {
-        if (count > stats.maxUsage) stats.maxUsage = count;
+        size_t c = count;  // Read volatile once
+        if (c > stats.maxUsage) stats.maxUsage = c;
         if (isFull()) stats.overflowCount++;
     }
 
