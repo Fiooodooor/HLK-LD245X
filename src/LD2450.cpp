@@ -71,7 +71,7 @@ int LD2450::parseRadarFrame()
 
 #else
     // Original implementation
-    if (rs->available() < 2) return -4;
+    if (!rs || rs->available() < 2) return -4;
 
     int read;
     uint8_t lenBytes[2], endBuf[5] = {};
