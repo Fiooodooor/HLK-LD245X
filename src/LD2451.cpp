@@ -90,6 +90,8 @@ int LD2451::parseRadarFrame()
       objectCount = frameBuffer[0];
       objectApproaching = frameBuffer[1];
     }
+    (void)objectCount;  // Reserved for future use
+    (void)objectApproaching;  // Reserved for future use
     LOG_DEBUG_TS("LD2451:");
     LOG_DEBUG(frameBufferBytesRead);
     LOG_DEBUG(":\n");

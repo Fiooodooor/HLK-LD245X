@@ -64,7 +64,8 @@ namespace esphome::ld245x
         Serial.printf(format, args...); }
 
     static void print_ts(Level level=INFO, bool timeStamp=true) {
-        if (level > DEBUG_LEVEL) return; if(timeStamp) {
+        if (level > DEBUG_LEVEL) return;
+        if(timeStamp) {
           Serial.printf("[%010lu] ", millis());
           switch(level) {
               case ERROR: Serial.print(ANSI_RED    "[ERROR] " ANSI_RESET); break;
@@ -74,11 +75,13 @@ namespace esphome::ld245x
               case TRACE: Serial.print(ANSI_MAGENTA"[TRACE] " ANSI_RESET); break; }}}
 
     template<typename... Args> static void printf(Level level, bool timeStamp, const char* format, Args... args) {
-        if (level > DEBUG_LEVEL) return; if (timeStamp) { print_ts(level, timeStamp); }
+        if (level > DEBUG_LEVEL) return;
+        if (timeStamp) { print_ts(level, timeStamp); }
         Serial.printf(format, args...); }
 
     template<typename... Args> static void print(Level level, bool timeStamp, Args... args) {
-        if (level > DEBUG_LEVEL) return; if (timeStamp) { print_ts(level, timeStamp); }
+        if (level > DEBUG_LEVEL) return;
+        if (timeStamp) { print_ts(level, timeStamp); }
         Serial.print(args...); }
 
     template<typename... Args> static void println(Level level, bool timeStamp, Args... args) {
