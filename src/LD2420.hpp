@@ -15,7 +15,7 @@
   #define SERIAL_TYPE SoftwareSerial
 #endif
 
-#include "Debug.hpp"
+#include "debug.hpp"
 
 namespace esphome::ld245x {
 
