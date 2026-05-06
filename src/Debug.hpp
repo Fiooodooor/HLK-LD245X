@@ -61,12 +61,25 @@ namespace esphome::ld245x
         printf(TRACE, true, format, args...); Serial.println(); }
 
     template<typename... Args> static void raw(const char* format, Args... args) {
-        Serial.printf(format, args...); }
+#if defined(ARDUINO_ARCH_AVR)
+        char buffer[128];
+        snprintf(buffer, sizeof(buffer), format, args...);
+        Serial.print(buffer);
+#else
+        Serial.printf(format, args...);
+#endif
+    }
 
     static void print_ts(Level level=INFO, bool timeStamp=true) {
         if (level > DEBUG_LEVEL) return;
         if(timeStamp) {
+#if defined(ARDUINO_ARCH_AVR)
+          Serial.print("[");
+          Serial.print(millis());
+          Serial.print("] ");
+#else
           Serial.printf("[%010lu] ", millis());
+#endif
           switch(level) {
               case ERROR: Serial.print(ANSI_RED    "[ERROR] " ANSI_RESET); break;
               case WARN:  Serial.print(ANSI_YELLOW "[WARN] " ANSI_RESET); break;
@@ -77,7 +90,14 @@ namespace esphome::ld245x
     template<typename... Args> static void printf(Level level, bool timeStamp, const char* format, Args... args) {
         if (level > DEBUG_LEVEL) return;
         if (timeStamp) { print_ts(level, timeStamp); }
-        Serial.printf(format, args...); }
+#if defined(ARDUINO_ARCH_AVR)
+        char buffer[128];
+        snprintf(buffer, sizeof(buffer), format, args...);
+        Serial.print(buffer);
+#else
+        Serial.printf(format, args...);
+#endif
+    }
 
     template<typename... Args> static void print(Level level, bool timeStamp, Args... args) {
         if (level > DEBUG_LEVEL) return;

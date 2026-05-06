@@ -56,7 +56,7 @@ struct CommandDef {
     uint8_t     payload_bytes;  // excluding cmd byte & reserved
 };
 
-inline constexpr CommandDef COMMAND_TABLE[] = {
+static constexpr CommandDef COMMAND_TABLE[] = {
     { "EnterConfig",         0xFF, 2 },
     { "ExitConfig",          0xFE, 0 },
     { "SetSingleTarget",     0x80, 0 },

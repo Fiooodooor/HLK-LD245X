@@ -16,19 +16,29 @@
 
 using namespace esphome::ld245x;
 
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
 HardwareSerial ld2451Serial(1);
+#define RADAR_SERIAL ld2451Serial
+#else
+// AVR uses predefined Serial1, Serial2, etc.
+#define RADAR_SERIAL Serial1
+#endif
+
 LD2451 ld2451;
 
 void setup() {
   Serial.begin(115200);
 #if defined(ARDUINO_ARCH_ESP32)
-  ld2451Serial.begin(LD2451_SERIAL_SPEED, SERIAL_8N1, RXP1, TXP1);
+  RADAR_SERIAL.begin(LD2451_SERIAL_SPEED, SERIAL_8N1, RXP1, TXP1);
+#elif defined(ARDUINO_ARCH_ESP8266)
+  RADAR_SERIAL.begin(LD2451_SERIAL_SPEED, SERIAL_8N1);
 #else
-  ld2451Serial.begin(LD2451_SERIAL_SPEED, SERIAL_8N1);
+  // AVR
+  RADAR_SERIAL.begin(LD2451_SERIAL_SPEED);
 #endif
-  ld2451Serial.setTimeout(1000);
-  LOG_INFO_FTS("LD2451, HardwareSerial(1) waiting for sensor data...\n");
-  ld2451.begin(ld2451Serial);
+  RADAR_SERIAL.setTimeout(1000);
+  LOG_INFO_FTS("LD2451 waiting for sensor data...\n");
+  ld2451.begin(RADAR_SERIAL);
 
   ld2451.beginConfigurationSession();
   ld2451.queryFirmwareVersion();

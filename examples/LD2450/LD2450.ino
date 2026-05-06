@@ -18,21 +18,30 @@ using namespace esphome::ld245x;
 
 #if defined(ARDUINO_ARCH_ESP32)
 HardwareSerial ld2450Serial(2);
-#else
+#define RADAR_SERIAL ld2450Serial
+#elif defined(ARDUINO_ARCH_ESP8266)
 HardwareSerial ld2450Serial(1);
+#define RADAR_SERIAL ld2450Serial
+#else
+// AVR uses predefined Serial1, Serial2, etc.
+#define RADAR_SERIAL Serial1
 #endif
+
 LD2450 ld2450;
 
 void setup() {
   Serial.begin(115200);
 #if defined(ARDUINO_ARCH_ESP32)
-  ld2450Serial.begin(LD2450_SERIAL_SPEED, SERIAL_8N1, RXP2, TXP2);
+  RADAR_SERIAL.begin(LD2450_SERIAL_SPEED, SERIAL_8N1, RXP2, TXP2);
+#elif defined(ARDUINO_ARCH_ESP8266)
+  RADAR_SERIAL.begin(LD2450_SERIAL_SPEED, SERIAL_8N1);
 #else
-  ld2450Serial.begin(LD2450_SERIAL_SPEED, SERIAL_8N1);
+  // AVR
+  RADAR_SERIAL.begin(LD2450_SERIAL_SPEED);
 #endif
-  ld2450Serial.setTimeout(1000);
-  LOG_INFO_FTS("LD2450, HardwareSerial waiting for sensor data...\n");
-  ld2450.begin(ld2450Serial);
+  RADAR_SERIAL.setTimeout(1000);
+  LOG_INFO_FTS("LD2450 waiting for sensor data...\n");
+  ld2450.begin(RADAR_SERIAL);
 
   ld2450.beginConfigurationSession();
   ld2450.setMultiTargetTracking();
