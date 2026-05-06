@@ -11,6 +11,11 @@
 
 #include "RadarTarget.hpp"
 #include "Debug.hpp"
+#include "LD245X_Config.h"
+
+#if LD245X_USE_CIRCULAR_BUFFER
+#include "CircularBuffer.hpp"
+#endif
 
 #include <vector>
 #include <map>
@@ -176,18 +181,55 @@ protected:
     int16_t firmwareType     = {0};
     uint8_t mac_bytes[6]     = {0};
     char    mac_string[18]   = {'\0'};
-    
+
     uint8_t frameBuffer[512] = {'\0'};
 
     /* ----- sequence buffers (copied in ctor) -------------------------- */
     const uint8_t* frameIndicatorsSeq[4];
     const uint8_t  frameIndicatorsLen[4];
 
+    /* ----- circular buffer support ----------------------------------- */
+#if LD245X_USE_CIRCULAR_BUFFER
+    CircularBuffer<uint8_t, LD245X_RX_BUFFER_SIZE> rxBuffer;
+    unsigned long lastReadTime = 0;
+
+    // Performance statistics
+#if LD245X_ENABLE_PERFORMANCE_STATS
+    uint32_t bytesReceived = 0;
+    uint32_t framesProcessed = 0;
+    uint32_t bufferOverruns = 0;
+    uint32_t syncLosses = 0;
+#endif
+
+    // Helper methods for circular buffer
+    size_t fillRxBuffer();
+    int findFrameHeader(bool& isCommandFrame);
+#endif
+
     /* ----- helpers --------------------------------------------------- */
     int  readDataCommandAck();
     inline bool matchSequence(const uint8_t* data, const uint8_t* seq, size_t len) const {
         return memcmp(data, seq, len) == 0;
     }
+
+    /* ----- performance getters --------------------------------------- */
+#if LD245X_USE_CIRCULAR_BUFFER && LD245X_ENABLE_PERFORMANCE_STATS
+public:
+    uint32_t getBytesReceived() const { return bytesReceived; }
+    uint32_t getFramesProcessed() const { return framesProcessed; }
+    uint32_t getBufferOverruns() const { return bufferOverruns; }
+    uint32_t getSyncLosses() const { return syncLosses; }
+    size_t getRxBufferUsage() const { return rxBuffer.available(); }
+    size_t getRxBufferCapacity() const { return rxBuffer.capacity(); }
+    void resetPerformanceStats() {
+        bytesReceived = 0;
+        framesProcessed = 0;
+        bufferOverruns = 0;
+        syncLosses = 0;
+        rxBuffer.resetStats();
+    }
+protected:
+#endif
 
 };
 

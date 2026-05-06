@@ -1,21 +1,12 @@
 // LD2420.hpp  (header – place in src/ alongside LD2450.hpp / LD2451.hpp)
-#pragma once
+#ifndef __LD2420_hpp
+#define __LD2420_hpp
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include <Arduino.h>
-#else
-  #include <WProgram.h>
-#endif
-
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
-  #include <HardwareSerial.h>
-#else
-  #include <SoftwareSerial.h>
-#endif
+#include "LD245X.hpp"
 
 namespace esphome::ld245x {
 
-class LD2420 {
+class LD2420 : public ObjectCounter<LD2420> {
 public:
     LD2420();
 
@@ -57,6 +48,8 @@ private:
     bool sendCommand(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
     int  readCommandResponse();
     void clearSerialBuffer();
+    void setNameString();
+    bool waitForSensorMessage(bool waitForever = false);
 
     SERIAL_TYPE* rs = nullptr;
     uint8_t frameBuffer[256];
@@ -70,3 +63,5 @@ private:
 };
 
 }  // namespace esphome::ld245x
+
+#endif

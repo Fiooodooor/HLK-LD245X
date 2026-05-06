@@ -1,4 +1,5 @@
 #include "RadarTarget.hpp"
+#include "LD245X_Config.h"
 #include <math.h>
 
 namespace esphome::ld245x
@@ -13,8 +14,53 @@ int RadarTarget::setFromRawBytes(const uint8_t* bytes, uint8_t len, uint8_t id)
   this->y = decodeSignedMag(bytes[2], bytes[3]);
   this->v = decodeSignedMag(bytes[4], bytes[5]);
   this->res = word(bytes[7], bytes[6]);
+
+#if LD245X_USE_FAST_MATH
+  // Optimized distance calculation using hypot (faster than sqrt(pow))
+  this->d = (uint16_t)roundf(hypotf((float)this->x, (float)this->y));
+
+  // Optimized angle calculation
+  #if LD245X_USE_INTEGER_MATH
+    // Fast integer approximation for platforms without FPU
+    if (this->x == 0) {
+      this->angle = (this->y > 0) ? 0 : 180;
+    } else if (this->y == 0) {
+      this->angle = (this->x > 0) ? 90 : -90;
+    } else {
+      // Integer arctangent approximation
+      int32_t abs_x = abs(this->x);
+      int32_t abs_y = abs(this->y);
+      int16_t angle_deg;
+
+      if (abs_x > abs_y) {
+        angle_deg = 45 - (45 * (abs_x - abs_y)) / (abs_x + abs_y);
+      } else {
+        angle_deg = 45 + (45 * (abs_y - abs_x)) / (abs_x + abs_y);
+      }
+
+      // Adjust for quadrant
+      if (this->x >= 0 && this->y >= 0) this->angle = 90 - angle_deg;
+      else if (this->x < 0 && this->y >= 0) this->angle = angle_deg - 90;
+      else if (this->x < 0 && this->y < 0) this->angle = 270 - angle_deg;
+      else this->angle = 90 + angle_deg;
+    }
+  #else
+    // Fast path for cardinal directions
+    if (this->x == 0) {
+      this->angle = (this->y > 0) ? 0 : 180;
+    } else if (this->y == 0) {
+      this->angle = (this->x > 0) ? 90 : -90;
+    } else {
+      // Use atan2f (single precision is faster and sufficient)
+      this->angle = (int16_t)roundf(-(atan2f((float)this->y, (float)this->x) * (180.0f / M_PI) - 90.0f));
+    }
+  #endif
+#else
+  // Original implementation
   this->d = (uint16_t)roundf(sqrtf(powf(this->x, 2.0f) + powf(this->y, 2.0f)));
   this->angle = (int16_t)roundf(-(atan2(y, x) * (180 / M_PI) - 90));
+#endif
+
   this->valid = (this->res > 0) ? true : false;
 
   return 0;
@@ -42,7 +88,7 @@ int16_t RadarTarget::format(char* buffer, const uint16_t bufferLen, bool ignoreI
   if (!buffer || bufferLen < 30)
     return -1;
 
-  return static_cast<int16_t>(snprintf(buffer, bufferLen, 
+  return static_cast<int16_t>(snprintf(buffer, bufferLen,
             "T:%d:x=%+d:y=%+d:v=%+d:d=%d:l=%d:valid=%d",
             this->id, this->x, this->y, this->v, this->d, this->angle, this->valid));
 }
@@ -53,7 +99,7 @@ String RadarTarget::format(bool ignoreInvalid) const
   format(buffer, sizeof(buffer), ignoreInvalid);
   return String(buffer);
 }
-    
+
 String RadarTarget::toJson(bool ignoreInvalid) const
 {
   char buffer[256] = {'\0'};
@@ -61,7 +107,7 @@ String RadarTarget::toJson(bool ignoreInvalid) const
   if(charsCopied > 0) {
     return String(buffer);
   }
-  return String("");  
+  return String("");
 }
 
 int16_t RadarTarget::toJson(char* buffer, const uint16_t bufferLen, bool ignoreInvalid) const
@@ -71,7 +117,7 @@ int16_t RadarTarget::toJson(char* buffer, const uint16_t bufferLen, bool ignoreI
   if (!buffer || bufferLen < 30)
     return -1;
 
-  return snprintf(buffer, bufferLen, 
+  return snprintf(buffer, bufferLen,
      "{\"id\":%d,\"x\":%d,\"y\":%d,\"velocity\":%d,\"distance\":%d,"
       "\"angle\":%d,\"resolution\":%d,\"snr\":%d,\"valid\":%s}",
       this->id, this->x, this->y, this->v, this->d, this->angle,
@@ -84,7 +130,7 @@ int16_t RadarTarget::toJsonArray(const RadarTarget* targets, uint8_t targetsCoun
 
   if (!buffer || bufferLen <= 0)
     return -1;
-    
+
   buffer[0] = '[';
 
   for (i = 0; i < targetsCount && bytes_read < bytes_left; ++i) {

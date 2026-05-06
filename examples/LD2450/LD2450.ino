@@ -16,14 +16,22 @@
 
 using namespace esphome::ld245x;
 
+#if defined(ARDUINO_ARCH_ESP32)
 HardwareSerial ld2450Serial(2);
+#else
+HardwareSerial ld2450Serial(1);
+#endif
 LD2450 ld2450;
 
 void setup() {
   Serial.begin(115200);
+#if defined(ARDUINO_ARCH_ESP32)
   ld2450Serial.begin(LD2450_SERIAL_SPEED, SERIAL_8N1, RXP2, TXP2);
+#else
+  ld2450Serial.begin(LD2450_SERIAL_SPEED, SERIAL_8N1);
+#endif
   ld2450Serial.setTimeout(1000);
-  LOG_INFO_FTS("LD2450, HardwareSerial(1) waiting for sensor data...\n");
+  LOG_INFO_FTS("LD2450, HardwareSerial waiting for sensor data...\n");
   ld2450.begin(ld2450Serial);
 
   ld2450.beginConfigurationSession();

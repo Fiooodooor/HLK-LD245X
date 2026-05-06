@@ -21,7 +21,11 @@ LD2451 ld2451;
 
 void setup() {
   Serial.begin(115200);
+#if defined(ARDUINO_ARCH_ESP32)
   ld2451Serial.begin(LD2451_SERIAL_SPEED, SERIAL_8N1, RXP1, TXP1);
+#else
+  ld2451Serial.begin(LD2451_SERIAL_SPEED, SERIAL_8N1);
+#endif
   ld2451Serial.setTimeout(1000);
   LOG_INFO_FTS("LD2451, HardwareSerial(1) waiting for sensor data...\n");
   ld2451.begin(ld2451Serial);

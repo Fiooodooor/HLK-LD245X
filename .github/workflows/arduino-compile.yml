@@ -1,0 +1,98 @@
+name: Arduino Compile Tests
+
+on:
+  push:
+    branches: [ main, master, claude/* ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  compile-examples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example:
+          - LD2450
+          - LD2451
+        board:
+          - fqbn: "esp32:esp32:esp32"
+            platform: "esp32:esp32"
+            platform-url: "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+          - fqbn: "esp8266:esp8266:generic"
+            platform: "esp8266:esp8266"
+            platform-url: "http://arduino.esp8266.com/stable/package_esp8266com_index.json"
+          - fqbn: "arduino:avr:mega"
+            platform: "arduino:avr"
+            platform-url: ""
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+
+      - name: Install platform
+        run: |
+          if [ -n "${{ matrix.board.platform-url }}" ]; then
+            arduino-cli core update-index --additional-urls "${{ matrix.board.platform-url }}"
+            arduino-cli core install ${{ matrix.board.platform }} --additional-urls "${{ matrix.board.platform-url }}"
+          else
+            arduino-cli core update-index
+            arduino-cli core install ${{ matrix.board.platform }}
+          fi
+
+      - name: Install library dependencies
+        run: |
+          # Link library to Arduino libraries folder
+          mkdir -p ~/Arduino/libraries
+          ln -s ${{ github.workspace }} ~/Arduino/libraries/HLK-LD245X
+
+      - name: Compile ${{ matrix.example }} example
+        run: |
+          arduino-cli compile --fqbn ${{ matrix.board.fqbn }} --warnings all \
+            ${{ github.workspace }}/examples/${{ matrix.example }}/${{ matrix.example }}.ino
+
+  lint-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for trailing whitespace
+        run: |
+          # Check for trailing whitespace in source files
+          if grep -r '[[:blank:]]$' --include='*.cpp' --include='*.hpp' --include='*.h' src/; then
+            echo "ERROR: Trailing whitespace found in source files"
+            exit 1
+          fi
+          echo "No trailing whitespace found"
+
+      - name: Check file permissions
+        run: |
+          # Ensure no executable permissions on source files
+          EXEC_FILES=$(find src/ -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -executable)
+          if [ -n "$EXEC_FILES" ]; then
+            echo "ERROR: Executable permissions found on source files"
+            echo "$EXEC_FILES"
+            exit 1
+          fi
+          echo "File permissions OK"
+
+  build-summary:
+    runs-on: ubuntu-latest
+    needs: [compile-examples, lint-check]
+    if: always()
+    steps:
+      - name: Check build status
+        run: |
+          if [ "${{ needs.compile-examples.result }}" == "success" ] && [ "${{ needs.lint-check.result }}" == "success" ]; then
+            echo "✅ All builds passed successfully!"
+            exit 0
+          else
+            echo "❌ Some builds failed"
+            echo "Compile examples: ${{ needs.compile-examples.result }}"
+            echo "Lint check: ${{ needs.lint-check.result }}"
+            exit 1
+          fi
