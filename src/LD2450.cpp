@@ -156,7 +156,7 @@ bool LD2450::queryTargetTrackingMode()
             _trackingMode = TrackingMode::MultiTargetTracking;
         } else {
             _trackingMode = TrackingMode::Unknown;
-        }        
+        }
         return true;
     }
     return false;
