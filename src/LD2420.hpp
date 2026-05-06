@@ -7,15 +7,19 @@
   #include <WProgram.h>
 #endif
 
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266) || defined(FORCE_HARDWARE_SERIAL)
   #include <HardwareSerial.h>
+  #define SERIAL_TYPE HardwareSerial
 #else
   #include <SoftwareSerial.h>
+  #define SERIAL_TYPE SoftwareSerial
 #endif
+
+#include "Debug.hpp"
 
 namespace esphome::ld245x {
 
-class LD2420 {
+class LD2420 : public ObjectCounter<LD2420> {
 public:
     LD2420();
 
@@ -57,6 +61,8 @@ private:
     bool sendCommand(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
     int  readCommandResponse();
     void clearSerialBuffer();
+    void setNameString();
+    bool waitForSensorMessage(bool waitForever = false);
 
     SERIAL_TYPE* rs = nullptr;
     uint8_t frameBuffer[256];

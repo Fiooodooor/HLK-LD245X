@@ -1,0 +1,40 @@
+name: Native Tests
+
+on:
+  push:
+    branches: [ main, master, claude/* ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test-circular-buffer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ make
+
+      - name: Compile tests
+        run: |
+          cd test
+          g++ -std=c++17 -Wall -Wextra test_circular_buffer.cpp -o test_circular_buffer
+
+      - name: Run tests
+        run: |
+          cd test
+          ./test_circular_buffer
+
+      - name: Test summary
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ All native tests passed!"
+          else
+            echo "❌ Some native tests failed"
+            exit 1
+          fi
