@@ -393,18 +393,18 @@ void LD245X::setNameString(const char* name)
     }
     else if(_sensorModel == SensorModel::LD2450) {
         snprintf(name_string, sizeof(name_string),
-                 "ld2450_%d", ObjectCounter::count());
+                 "ld2450_%lu", static_cast<unsigned long>(ObjectCounter::count()));
     }
     else if(_sensorModel == SensorModel::LD2451) {
         snprintf(name_string, sizeof(name_string),
-                 "ld2451_%d", ObjectCounter::count());
+                 "ld2451_%lu", static_cast<unsigned long>(ObjectCounter::count()));
     }
     else if(_sensorModel == SensorModel::LD2420) {
         snprintf(name_string, sizeof(name_string),
-                 "ld2420_%d", ObjectCounter::count());
+                 "ld2420_%lu", static_cast<unsigned long>(ObjectCounter::count()));
     } else {
         snprintf(name_string, sizeof(name_string),
-                 "ld245x_%d", ObjectCounter::count());
+                 "ld245x_%lu", static_cast<unsigned long>(ObjectCounter::count()));
     }
 }
 

@@ -156,9 +156,9 @@ namespace esphome::ld245x
     #define LOG_DEBUG_FTS(...)   if (DEBUG_LEVEL >= Debug::DEBUG) Debug::printf(Debug::DEBUG, true, __VA_ARGS__)
     #define LOG_TRACE_FTS(...)   if (DEBUG_LEVEL >= Debug::TRACE) Debug::printf(Debug::TRACE, true, __VA_ARGS__)
     #define LOG_DEBUG_PRINT_BYTES(data, len) \
-      do { for(auto j = 0; j < len; j++) { if (data[j] < 0x10) LOG_DEBUG('0'); LOG_DEBUG(data[j], HEX); } LOG_DEBUG(""); } while(0);
+      do { for(size_t j = 0; j < static_cast<size_t>(len); j++) { if (data[j] < 0x10) LOG_DEBUG('0'); LOG_DEBUG(data[j], HEX); } LOG_DEBUG(""); } while(0);
     #define LOG_DEBUG_PRINTLN_BYTES(data, len) \
-      do { for(auto j = 0; j < len; j++) { if (data[j] < 0x10) LOG_DEBUG('0'); LOG_DEBUG(data[j], HEX); } LOG_NEWLINE(""); } while(0);
+      do { for(size_t j = 0; j < static_cast<size_t>(len); j++) { if (data[j] < 0x10) LOG_DEBUG('0'); LOG_DEBUG(data[j], HEX); } LOG_NEWLINE(""); } while(0);
     #define TRACE_FUNC()        if (DEBUG_LEVEL >= Debug::TRACE) Trace __trace(__PRETTY_FUNCTION__)
 #else
     #define LOG_NEWLINE(...)    do {} while(0)

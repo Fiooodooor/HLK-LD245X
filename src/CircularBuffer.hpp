@@ -111,7 +111,7 @@ public:
         for (size_t i = 0; i < searchLen; i++) {
             bool match = true;
             for (size_t j = 0; j < patternLen; j++) {
-                T val;
+                T val = T();
                 peek(val, i + j);
                 if (val != pattern[j]) {
                     match = false;
