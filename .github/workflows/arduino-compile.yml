@@ -72,8 +72,10 @@ jobs:
       - name: Check file permissions
         run: |
           # Ensure no executable permissions on source files
-          if find src/ -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -executable; then
+          EXEC_FILES=$(find src/ -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -executable)
+          if [ -n "$EXEC_FILES" ]; then
             echo "ERROR: Executable permissions found on source files"
+            echo "$EXEC_FILES"
             exit 1
           fi
           echo "File permissions OK"

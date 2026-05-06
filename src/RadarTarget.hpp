@@ -12,7 +12,7 @@ namespace esphome::ld245x
 
 class RadarTarget {
 public:
-  RadarTarget() : x(0), y(0), v(0), res(0), d(0), angle(0), id(0), snr(0), valid(false) { };
+  RadarTarget() : id(0), x(0), y(0), v(0), d(0), angle(0), res(0), snr(0), valid(false) { };
   RadarTarget(const uint8_t* bytes, uint8_t len, uint8_t id = 0) : RadarTarget() { this->setFromRawBytes(bytes, len, id); };
 
   int setFromRawBytes(const uint8_t* bytes, uint8_t len, uint8_t id = 0);
