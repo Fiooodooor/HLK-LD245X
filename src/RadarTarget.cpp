@@ -35,14 +35,14 @@ int RadarTarget::setFromRawBytes(const uint8_t* bytes, uint8_t len, uint8_t id)
       if (abs_x > abs_y) {
         angle_deg = 45 - (45 * (abs_x - abs_y)) / (abs_x + abs_y);
       } else {
-        angle_deg = 45 * (abs_x + abs_y) / (abs_x + abs_y);
+        angle_deg = 45 + (45 * (abs_y - abs_x)) / (abs_x + abs_y);
       }
 
       // Adjust for quadrant
       if (this->x >= 0 && this->y >= 0) this->angle = 90 - angle_deg;
-      else if (this->x < 0 && this->y >= 0) this->angle = 90 + angle_deg;
+      else if (this->x < 0 && this->y >= 0) this->angle = angle_deg - 90;
       else if (this->x < 0 && this->y < 0) this->angle = 270 - angle_deg;
-      else this->angle = 270 + angle_deg;
+      else this->angle = 90 + angle_deg;
     }
   #else
     // Fast path for cardinal directions

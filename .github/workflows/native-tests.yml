@@ -25,6 +25,7 @@ jobs:
           g++ -std=c++17 -Wall -Wextra test_circular_buffer.cpp -o test_circular_buffer
 
       - name: Run tests
+        id: run-tests
         run: |
           cd test
           ./test_circular_buffer
@@ -32,7 +33,7 @@ jobs:
       - name: Test summary
         if: always()
         run: |
-          if [ $? -eq 0 ]; then
+          if [ "${{ steps.run-tests.outcome }}" = "success" ]; then
             echo "✅ All native tests passed!"
           else
             echo "❌ Some native tests failed"
