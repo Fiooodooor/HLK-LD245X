@@ -15,6 +15,7 @@ jobs:
     strategy:
       matrix:
         example:
+          - LD2420
           - LD2450
           - LD2451
         board:
