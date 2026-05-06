@@ -1,11 +1,13 @@
 name: Arduino Compile Tests
 
 on:
-  push:
-    branches: [ main, master, claude/* ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   compile-examples:
