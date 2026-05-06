@@ -17,9 +17,6 @@
 #include "CircularBuffer.hpp"
 #endif
 
-#include <vector>
-#include <map>
-
 namespace esphome::ld245x {
 
 #define LD2450_RADAR_MAX_RANGE 5000  // mm (5 meters)
@@ -76,9 +73,10 @@ inline constexpr CommandDef COMMAND_TABLE[] = {
 };
 
 enum class SensorModel : uint8_t {
-    LD2450,
-    LD2451,
-    Unknown
+    LD2450 = 0,
+    LD2451 = 1,
+    Unknown = 2,
+    LD2420 = 3
 };
 
 enum class BaudRate : uint8_t
@@ -162,9 +160,11 @@ protected:
     bool  sendRawCommand(LD245X_Commands cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
     void  setNameString(const char* name = nullptr);
 
+    static constexpr uint8_t MAX_TARGETS = 3;
+
     /* ----- data ------------------------------------------------------ */
     Stream* rs = nullptr;
-    std::vector<RadarTarget> rt;
+    RadarTarget rt[MAX_TARGETS];
     uint8_t nrValidTargets = 0;
     SensorModel _sensorModel = SensorModel::Unknown;
     BaudRate _baudRate = BaudRate::BAUD_256000;

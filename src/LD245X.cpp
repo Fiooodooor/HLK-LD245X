@@ -11,7 +11,7 @@ LD245X::LD245X(SensorModel sensorModel, BaudRate baudRate,
                uint8_t maxTargetsCount, uint8_t singleTargetSizeInBytes,
                const uint8_t cmdSeqStart[], const uint8_t cmdSeqEnd[],
                const uint8_t dataSeqStart[], const uint8_t dataSeqEnd[])
-    : dataTargetsCount(maxTargetsCount),
+    : dataTargetsCount(maxTargetsCount > LD245X::MAX_TARGETS ? LD245X::MAX_TARGETS : maxTargetsCount),
       dataTargetSize(singleTargetSizeInBytes),
       _sensorModel(sensorModel),
       _baudRate(baudRate),
@@ -32,9 +32,6 @@ LD245X::LD245X(SensorModel sensorModel, BaudRate baudRate,
 {
     TRACE_FUNC();
     setNameString();
-    rt.reserve(maxTargetsCount);
-    for (uint8_t i = 0; i < maxTargetsCount; ++i)
-        rt.emplace_back();
 }
 /* --------------------------------------------------------------------- */
 void LD245X::begin(SERIAL_TYPE &radarUartStream,
@@ -401,6 +398,10 @@ void LD245X::setNameString(const char* name)
     else if(_sensorModel == SensorModel::LD2451) {
         snprintf(name_string, sizeof(name_string),
                  "ld2451_%d", ObjectCounter::count());
+    }
+    else if(_sensorModel == SensorModel::LD2420) {
+        snprintf(name_string, sizeof(name_string),
+                 "ld2420_%d", ObjectCounter::count());
     } else {
         snprintf(name_string, sizeof(name_string),
                  "ld245x_%d", ObjectCounter::count());

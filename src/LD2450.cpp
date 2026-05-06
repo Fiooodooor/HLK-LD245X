@@ -18,10 +18,6 @@ LD2450::LD2450()
       _zoneFiltering(ZoneFiltering::Disabled)
 {
     setFactorySetting();
-
-    _zones.reserve(3);
-    for (uint8_t i = 0; i < 3; ++i)
-        _zones.emplace_back();
 }
 
 /* --------------------------------------------------------------------- */

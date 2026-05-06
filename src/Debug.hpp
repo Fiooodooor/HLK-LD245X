@@ -45,23 +45,23 @@ namespace esphome::ld245x
   public:
     enum Level { ERROR = 1, WARN = 2, INFO = 3, DEBUG = 4, TRACE = 5 };
 
-    template<typename... Args> static void error(const char* format, Args&&... args) {
-        println(ERROR, true, format, std::forward<Args>(args)...); }
+    template<typename... Args> static void error(const char* format, Args... args) {
+        println(ERROR, true, format, args...); }
 
-    template<typename... Args> static void warn(const char* format, Args&&... args) {
-        println(WARN, true, format, std::forward<Args>(args)...); }
+    template<typename... Args> static void warn(const char* format, Args... args) {
+        println(WARN, true, format, args...); }
 
-    template<typename... Args> static void info(const char* format, Args&&... args) {
-        println(INFO, true, format, std::forward<Args>(args)...); }
+    template<typename... Args> static void info(const char* format, Args... args) {
+        println(INFO, true, format, args...); }
 
-    template<typename... Args> static void debug(const char* format, Args&&... args) {
-        println(DEBUG, true, format, std::forward<Args>(args)...); }
+    template<typename... Args> static void debug(const char* format, Args... args) {
+        println(DEBUG, true, format, args...); }
 
-    template<typename... Args> static void trace(const char* format, Args&&... args) {
-        printf(TRACE, true, format, std::forward<Args>(args)...); Serial.println(); }
+    template<typename... Args> static void trace(const char* format, Args... args) {
+        printf(TRACE, true, format, args...); Serial.println(); }
 
-    template<typename... Args> static void raw(const char* format, Args&&... args) {
-        Serial.printf(format, std::forward<Args>(args)...); }
+    template<typename... Args> static void raw(const char* format, Args... args) {
+        Serial.printf(format, args...); }
 
     static void print_ts(Level level=INFO, bool timeStamp=true) {
         if (level > DEBUG_LEVEL) return; if(timeStamp) {
@@ -73,16 +73,16 @@ namespace esphome::ld245x
               case DEBUG: Serial.print(ANSI_CYAN   "[DEBUG] " ANSI_RESET); break;
               case TRACE: Serial.print(ANSI_MAGENTA"[TRACE] " ANSI_RESET); break; }}}
 
-    template<typename... Args> static void printf(Level level, bool timeStamp, const char* format, Args&&... args) {
+    template<typename... Args> static void printf(Level level, bool timeStamp, const char* format, Args... args) {
         if (level > DEBUG_LEVEL) return; if (timeStamp) { print_ts(level, timeStamp); }
-        Serial.printf(format, std::forward<Args>(args)...); }
+        Serial.printf(format, args...); }
 
-    template<typename... Args> static void print(Level level, bool timeStamp, Args&&... args) {
+    template<typename... Args> static void print(Level level, bool timeStamp, Args... args) {
         if (level > DEBUG_LEVEL) return; if (timeStamp) { print_ts(level, timeStamp); }
-        Serial.print(std::forward<Args>(args)...); }
+        Serial.print(args...); }
 
-    template<typename... Args> static void println(Level level, bool timeStamp, Args&&... args) {
-        print(level, timeStamp, std::forward<Args>(args)...); Serial.println(); }
+    template<typename... Args> static void println(Level level, bool timeStamp, Args... args) {
+        print(level, timeStamp, args...); Serial.println(); }
   };
 #endif
 

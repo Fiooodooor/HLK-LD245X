@@ -23,35 +23,14 @@ The LD2420 sensor files were created without proper Arduino library structure:
 
 ## Solutions Implemented
 
-### 1. Fixed LD2420.hpp Header File
+### 1. Reimplemented LD2420 in LD245X style
 
-**Added SERIAL_TYPE Definition:**
-```cpp
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266) || defined(FORCE_HARDWARE_SERIAL)
-  #include <HardwareSerial.h>
-  #define SERIAL_TYPE HardwareSerial
-#else
-  #include <SoftwareSerial.h>
-  #define SERIAL_TYPE SoftwareSerial
-#endif
-```
+`LD2420` is implemented as a concrete sensor class that **inherits from `LD245X`**, matching the same structure/pattern used for `LD2450` and `LD2451`.
 
-**Added Debug Include:**
-```cpp
-#include "Debug.hpp"
-```
-
-**Added ObjectCounter Inheritance:**
-```cpp
-class LD2420 : public ObjectCounter<LD2420> {
-```
-
-**Added Missing Method Declarations:**
-```cpp
-private:
-    void setNameString();
-    bool waitForSensorMessage(bool waitForever = false);
-```
+Key outcomes:
+- Reuses the shared `SERIAL_TYPE` selection logic from `src/LD245X.hpp`
+- Reuses shared serial stream/buffer handling from `LD245X` instead of duplicating it in `LD2420`
+- Keeps LD2420's own 16-bit command protocol via dedicated `sendLD2420Command()` / `readLD2420Response()` helpers
 
 ### 2. Added CI/CD Infrastructure
 
@@ -88,11 +67,13 @@ g++ -std=c++17 test_circular_buffer.cpp -o test_circular_buffer
 ## Verification
 
 All reported compilation errors are now resolved:
-- ✅ SERIAL_TYPE properly defined for all platforms
-- ✅ All LOG_* and TRACE_FUNC macros available
-- ✅ ObjectCounter inheritance provides instance counting
-- ✅ All methods declared in header
+- ✅ `SERIAL_TYPE` properly defined for all platforms
+- ✅ All `LOG_*` and `TRACE_FUNC` macros available
+- ✅ LD2420 header/source are self-contained and consistent with the LD2450/LD2451 layout
 - ✅ Examples compile successfully on multiple platforms
+
+Additional CI fix:
+- ✅ Removed STL usage that breaks `arduino:avr` CI compilation (e.g., `std::vector` in `LD245X`)
 
 ## Impact
 

@@ -1,4 +1,3 @@
-// LD2420.hpp  (header – place in src/ alongside LD2450.hpp / LD2451.hpp)
 #ifndef __LD2420_hpp
 #define __LD2420_hpp
 
@@ -6,13 +5,22 @@
 
 namespace esphome::ld245x {
 
-class LD2420 : public ObjectCounter<LD2420> {
+// LD2420 specific constants
+#define LD2420_MAX_SENSOR_TARGETS 1
+#define LD2420_TARGET_SIZE 8
+#define LD2420_SERIAL_BUFFER 256
+#define LD2420_SERIAL_SPEED 115200
+
+/* --------------------------------------------------------------------- */
+/*  Concrete sensor implementation for LD2420                            */
+/* --------------------------------------------------------------------- */
+class LD2420 : public LD245X {
 public:
     LD2420();
+    void setFactorySetting() override;
+    int parseRadarFrame() override;
 
-    void begin(SERIAL_TYPE &radarUartStream, bool waitReady = true);
-
-    // === ALL command-mode functions from the official spec (Yes + NO commands fully implemented) ===
+    // === LD2420-specific command-mode functions (official spec) ===
     bool beginConfigurationSession();           // Open command mode (3-step procedure)
     bool endConfigurationSession();             // Disable command mode
 
@@ -22,7 +30,7 @@ public:
     bool writeRegister(uint16_t chipAddr, const uint16_t* addrDataPairs, uint8_t numPairs);
     bool readRegister(uint16_t chipAddr, const uint16_t* regAddrs, uint8_t numRegs, uint16_t* outData);
 
-    // ABD parameters (0x0007 / 0x0008) – implemented even though marked NO for completeness
+    // ABD parameters (0x0007 / 0x0008)
     bool configureABDParameters(const uint8_t* payload, size_t len);
     bool readABDParameters(const uint8_t* paramNames, uint8_t numParams, uint8_t* outValues, size_t outLen);
 
@@ -38,28 +46,17 @@ public:
     bool exitFactoryTestMode();
     bool sendFactoryTestResults(const uint8_t* payload, size_t len);
 
-    // Custom command range (0x0060–0x00A0) – generic access
+    // Custom command range (0x0060–0x00A0)
     bool sendCustomCommand(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
 
-    const char* getNameString() const;
     const char* getFirmwareString() const;
 
 private:
-    bool sendCommand(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
-    int  readCommandResponse();
+    bool sendLD2420Command(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
+    int readLD2420Response();
     void clearSerialBuffer();
-    void setNameString();
-    bool waitForSensorMessage(bool waitForever = false);
 
-    SERIAL_TYPE* rs = nullptr;
-    uint8_t frameBuffer[256];
-    size_t frameBufferBytesRead = 0;
-
-    char name_string[32];
-    char firmware_string[32];
-
-    static const uint8_t FRAME_HEADER[4];
-    static const uint8_t FRAME_TAIL[4];
+    char ld2420_firmware_string[32] = {'\0'};
 };
 
 }  // namespace esphome::ld245x
