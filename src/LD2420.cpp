@@ -258,6 +258,8 @@ int LD2420::readLD2420Response()
         if (tailRead != static_cast<int>(frameIndicatorsLen[1])) return -6;
         if (!matchSequence(tail, frameIndicatorsSeq[1], frameIndicatorsLen[1])) return -6;
 
+        LOG_DEBUG_PRINT_BYTES(frameBuffer, frameBufferBytesRead);
+
         if (frameBufferBytesRead >= 4) {
             uint16_t retVal = word(frameBuffer[3], frameBuffer[2]);
             return (retVal == 0) ? 0 : -static_cast<int>(retVal);
