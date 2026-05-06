@@ -10,7 +10,7 @@
 #endif
 
 #include "RadarTarget.hpp"
-#include "debug.hpp"
+#include "Debug.hpp"
 #include "LD245X_Config.h"
 
 #if LD245X_USE_CIRCULAR_BUFFER
