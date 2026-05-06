@@ -1,21 +1,8 @@
 // LD2420.hpp  (header – place in src/ alongside LD2450.hpp / LD2451.hpp)
-#pragma once
+#ifndef __LD2420_hpp
+#define __LD2420_hpp
 
-#if defined(ARDUINO) && ARDUINO >= 100
-  #include <Arduino.h>
-#else
-  #include <WProgram.h>
-#endif
-
-#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266) || defined(FORCE_HARDWARE_SERIAL)
-  #include <HardwareSerial.h>
-  #define SERIAL_TYPE HardwareSerial
-#else
-  #include <SoftwareSerial.h>
-  #define SERIAL_TYPE SoftwareSerial
-#endif
-
-#include "debug.hpp"
+#include "LD245X.hpp"
 
 namespace esphome::ld245x {
 
@@ -76,3 +63,5 @@ private:
 };
 
 }  // namespace esphome::ld245x
+
+#endif
