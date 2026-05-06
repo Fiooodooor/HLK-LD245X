@@ -46,7 +46,7 @@ public:
 
 protected:
     TrackingMode _trackingMode = TrackingMode::MultiTargetTracking;
-    std::vector<ZoneCoordinates> _zones;
+    ZoneCoordinates _zones[3];
     ZoneFiltering _zoneFiltering = ZoneFiltering::Disabled;
     char zone_string[512] = {'\0'};
 };

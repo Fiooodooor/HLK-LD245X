@@ -20,8 +20,11 @@ public:
     void setFactorySetting() override;
     int parseRadarFrame() override;
 
-    // === LD2420-specific command-mode functions ===
-    // These extend the base LD245X functionality with LD2420-specific commands
+    // === LD2420-specific command-mode functions (official spec) ===
+    bool beginConfigurationSession();           // Open command mode (3-step procedure)
+    bool endConfigurationSession();             // Disable command mode
+
+    bool queryFirmwareVersion();                // 0x0000 Read version
 
     // Register access (0x0001 / 0x0002)
     bool writeRegister(uint16_t chipAddr, const uint16_t* addrDataPairs, uint8_t numPairs);
@@ -46,11 +49,14 @@ public:
     // Custom command range (0x0060–0x00A0)
     bool sendCustomCommand(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
 
+    const char* getLD2420FirmwareString() const { return this->ld2420_firmware_string; }
+
 private:
     bool sendLD2420Command(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
     int readLD2420Response();
+    void clearSerialBuffer();
 
-    char ld2420_firmware_string[32];
+    char ld2420_firmware_string[32] = {'\0'};
 };
 
 }  // namespace esphome::ld245x
