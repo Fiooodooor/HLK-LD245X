@@ -92,8 +92,10 @@ public:
      * @return true if successful, false if offset is beyond available data
      */
     bool peek(T& item, size_t offset = 0) const {
-        if (offset >= count) return false;
-        size_t pos = (tail + offset) % SIZE;
+        size_t c = count;  // Read volatile once
+        if (offset >= c) return false;
+        size_t t = tail;  // Read volatile once
+        size_t pos = (t + offset) % SIZE;
         item = buffer[pos];
         return true;
     }
@@ -105,9 +107,10 @@ public:
      * @return Offset from tail where pattern starts, or -1 if not found
      */
     int find(const T* pattern, size_t patternLen) const {
-        if (!pattern || patternLen > count || patternLen == 0) return -1;
+        size_t c = count;  // Read volatile once
+        if (!pattern || patternLen > c || patternLen == 0) return -1;
 
-        size_t searchLen = count - patternLen + 1;
+        size_t searchLen = c - patternLen + 1;
         for (size_t i = 0; i < searchLen; i++) {
             bool match = true;
             for (size_t j = 0; j < patternLen; j++) {
@@ -140,7 +143,9 @@ public:
      * @brief Clear all data from the buffer
      */
     void clear() {
-        head = tail = count = 0;
+        head = 0;
+        tail = 0;
+        count = 0;
     }
 
     // Query methods
