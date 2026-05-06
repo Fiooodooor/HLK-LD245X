@@ -79,11 +79,123 @@ uint8_t LD245X::getNrValidTargets() const
     return nrValidTargets;
 }
 
+#if LD245X_USE_CIRCULAR_BUFFER
+/* --------------------------------------------------------------------- */
+size_t LD245X::fillRxBuffer()
+{
+    if (!rs) return 0;
+
+    size_t available = rs->available();
+    if (available == 0) return 0;
+
+    // Limit read size to prevent monopolizing CPU
+    size_t toRead = available < rxBuffer.freeSpace() ? available : rxBuffer.freeSpace();
+    if (toRead > 128) toRead = 128;  // Max 128 bytes per call
+
+    uint8_t tempBuf[128];
+    size_t actualRead = rs->readBytes(tempBuf, toRead);
+    size_t written = rxBuffer.write(tempBuf, actualRead);
+
+#if LD245X_ENABLE_PERFORMANCE_STATS
+    bytesReceived += written;
+
+    if (written < actualRead) {
+        bufferOverruns++;
+        LOG_WARN_FTS("RX buffer full, lost %d bytes\n", actualRead - written);
+    }
+#endif
+
+    return written;
+}
+
+/* --------------------------------------------------------------------- */
+int LD245X::findFrameHeader(bool& isCommandFrame)
+{
+    // Search for command frame header first (higher priority)
+    int cmdPos = rxBuffer.find(frameIndicatorsSeq[0], frameIndicatorsLen[0]);
+
+    // Search for data frame header
+    int dataPos = rxBuffer.find(frameIndicatorsSeq[2], frameIndicatorsLen[2]);
+
+    // Return whichever comes first
+    if (cmdPos >= 0 && (dataPos < 0 || cmdPos < dataPos)) {
+        isCommandFrame = true;
+        return cmdPos;
+    }
+
+    if (dataPos >= 0) {
+        isCommandFrame = false;
+        return dataPos;
+    }
+
+    return -1;  // No frame found
+}
+#endif
+
 /* --------------------------------------------------------------------- */
 int LD245X::read(bool waitAvailable)
 {
     if (!rs) return -2;
 
+#if LD245X_USE_CIRCULAR_BUFFER
+    unsigned long start = millis();
+    lastReadTime = start;
+
+    while (millis() - start < 1000) {
+        // Fill buffer from serial
+        fillRxBuffer();
+
+        if (rxBuffer.available() < 10 && waitAvailable) {
+            delay(1);  // Brief delay if waiting
+            continue;
+        }
+
+        // Try to find a frame header
+        bool isCommandFrame = false;
+        int headerPos = findFrameHeader(isCommandFrame);
+
+        if (headerPos < 0) {
+            // No frame header found
+            if (!waitAvailable) return -1;
+
+            // Discard garbage bytes if buffer is filling up
+            if (rxBuffer.available() > 512) {
+                LOG_DEBUG_TS("Discarding garbage data\n");
+                rxBuffer.discard(256);
+#if LD245X_ENABLE_PERFORMANCE_STATS
+                syncLosses++;
+#endif
+            }
+            continue;
+        }
+
+        // Discard any bytes before the header
+        if (headerPos > 0) {
+            rxBuffer.discard(headerPos);
+        }
+
+        // Process based on frame type
+        if (isCommandFrame) {
+            // Discard command header
+            rxBuffer.discard(frameIndicatorsLen[0]);
+            return readDataCommandAck();
+        } else {
+            // Discard data header
+            rxBuffer.discard(frameIndicatorsLen[2]);
+            int8_t result = parseRadarFrame();
+            if (result > 0) {
+                nrValidTargets = result;
+#if LD245X_ENABLE_PERFORMANCE_STATS
+                framesProcessed++;
+#endif
+                return nrValidTargets;
+            }
+        }
+    }
+
+    return -1;
+#else
+    // Original implementation without circular buffer
     unsigned long start = millis();
     while (millis() - start < 1000) {
         if (!rs->available()) {
@@ -106,12 +218,51 @@ int LD245X::read(bool waitAvailable)
         }
     }
     return -1;
+#endif
 }
 
 /* --------------------------------------------------------------------- */
 int LD245X::readDataCommandAck()
 {
     TRACE_FUNC();
+#if LD245X_USE_CIRCULAR_BUFFER
+    // Ensure we have at least length bytes available
+    unsigned long start = millis();
+    while (rxBuffer.available() < 4 && (millis() - start < 500)) {
+        fillRxBuffer();
+        delay(1);
+    }
+
+    if (rxBuffer.available() < 4) return -4;
+
+    uint8_t tmp[2];
+    rxBuffer.read(tmp, 2);
+    uint16_t payloadLen = word(tmp[1], tmp[0]);
+
+    if (payloadLen > sizeof(frameBuffer)) return -3;
+
+    // Wait for full payload
+    start = millis();
+    while (rxBuffer.available() < payloadLen + frameIndicatorsLen[1]) {
+        if (millis() - start > 500) return -5;
+        fillRxBuffer();
+        delay(1);
+    }
+
+    size_t read = rxBuffer.read(frameBuffer, payloadLen);
+    if (read != payloadLen) return -3;
+
+    frameBuffer[read] = '\0';
+    frameBufferBytesRead = read;
+
+    uint8_t endBuf[8] = {};
+    int seqRead = rxBuffer.read(endBuf, frameIndicatorsLen[1]);
+    if (seqRead != static_cast<int>(frameIndicatorsLen[1])) return -2;
+
+    if (!matchSequence(endBuf, frameIndicatorsSeq[1], frameIndicatorsLen[1])) return -1;
+
+#else
+    // Original implementation
     if (rs->available() < 4) return -4;
 
     uint8_t tmp[2];
@@ -132,12 +283,13 @@ int LD245X::readDataCommandAck()
     if (seqRead != static_cast<int>(frameIndicatorsLen[1])) return -2;
 
     if (!matchSequence(endBuf, frameIndicatorsSeq[1], frameIndicatorsLen[1])) return -1;
+#endif
 
     /* ---- ACK interpretation ---- */
     LOG_DEBUG_PRINT_BYTES(frameBuffer, frameBufferBytesRead);
     if (_lastCmd < LD245X_Commands::_Count) {
         if(COMMAND_TABLE[static_cast<uint8_t>(_lastCmd)].cmd_byte == frameBuffer[0] &&
-           frameBuffer[1] == 0x01) 
+           frameBuffer[1] == 0x01)
         {
             if(frameBuffer[3] == 0x00 && frameBuffer[2] == 0x00) {
               LOG_DEBUG_TS("readCommand: ack=true, result=success\n");

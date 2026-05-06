@@ -27,9 +27,48 @@ void LD2451::setFactorySetting()
 
 int LD2451::parseRadarFrame()
 {
+#if LD245X_USE_CIRCULAR_BUFFER
+    // Ensure we have length bytes
+    unsigned long start = millis();
+    while (rxBuffer.available() < 2 && (millis() - start < 100)) {
+        fillRxBuffer();
+        delay(1);
+    }
+
+    if (rxBuffer.available() < 2) return -4;
+
+    uint8_t lenBytes[2];
+    rxBuffer.read(lenBytes, 2);
+    uint16_t bytesExpected = word(lenBytes[1], lenBytes[0]);
+
+    if (bytesExpected > sizeof(frameBuffer)) return -4;
+
+    // Wait for complete frame
+    start = millis();
+    size_t totalExpected = bytesExpected + frameIndicatorsLen[3];
+    while (rxBuffer.available() < totalExpected) {
+        if (millis() - start > 100) return -3;
+        fillRxBuffer();
+        delay(1);
+    }
+
+    // Read payload
+    frameBufferBytesRead = rxBuffer.read(frameBuffer, bytesExpected);
+    if (frameBufferBytesRead != static_cast<int>(bytesExpected)) return -3;
+
+    frameBuffer[frameBufferBytesRead] = '\0';
+
+    // Read and verify footer
+    uint8_t endBuf[5] = {};
+    int seqRead = rxBuffer.read(endBuf, frameIndicatorsLen[3]);
+    if (seqRead != static_cast<int>(frameIndicatorsLen[3])) return -2;
+    if (!matchSequence(endBuf, frameIndicatorsSeq[3], frameIndicatorsLen[3])) return -1;
+
+#else
+    // Original implementation
     if (rs->available() < 2) return -4;
 
-    uint8_t objectCount, objectApproaching, lenBytes[2], id = 0, endBuf[5] = {};
+    uint8_t lenBytes[2], endBuf[5] = {};
     lenBytes[0] = rs->read();               // LSB
     lenBytes[1] = rs->read();               // MSB
     uint16_t bytesExpected = word(lenBytes[1], lenBytes[0]);
@@ -44,7 +83,9 @@ int LD2451::parseRadarFrame()
     int seqRead = rs->readBytes(endBuf, frameIndicatorsLen[3]);
     if (seqRead != static_cast<int>(frameIndicatorsLen[3])) return -2;
     if (!matchSequence(endBuf, frameIndicatorsSeq[3], frameIndicatorsLen[3])) return -1;
+#endif
 
+    uint8_t objectCount = 0, objectApproaching = 0;
     if (frameBufferBytesRead>=2) {
       objectCount = frameBuffer[0];
       objectApproaching = frameBuffer[1];
@@ -53,6 +94,7 @@ int LD2451::parseRadarFrame()
     LOG_DEBUG(frameBufferBytesRead);
     LOG_DEBUG(":\n");
 
+    uint8_t id = 0;
     for (size_t i = 2; i < static_cast<size_t>(frameBufferBytesRead) && id < dataTargetsCount; i += dataTargetSize, ++id) {
         rt[id].setValid(false);
         if (i + dataTargetSize <= static_cast<size_t>(frameBufferBytesRead)) {
