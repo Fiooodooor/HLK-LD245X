@@ -229,7 +229,7 @@ int LD2420::readLD2420Response()
         if (hdrPos > 0)
             rxBuffer.discard(hdrPos);
 
-        if (rxBuffer.available() < frameIndicatorsLen[0] + 2) {
+        if (rxBuffer.available() < static_cast<size_t>(frameIndicatorsLen[0] + 2)) {
             delay(1);
             continue;
         }
@@ -447,10 +447,6 @@ bool LD2420::sendCustomCommand(uint16_t cmd, const uint8_t* payload, size_t payl
 }
 
 /* --------------------------------------------------------------------- */
-const char* LD2420::getFirmwareString() const
-{
-    return ld2420_firmware_string;
-}
 
 /* --------------------------------------------------------------------- */
 void LD2420::clearSerialBuffer()
