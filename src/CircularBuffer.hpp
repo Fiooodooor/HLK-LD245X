@@ -32,7 +32,7 @@ public:
         if (isFull()) return false;
         buffer[head] = item;
         head = (head + 1) % SIZE;
-        count++;
+        count = count + 1u;
         return true;
     }
 
@@ -48,8 +48,8 @@ public:
         while (written < len && !isFull()) {
             buffer[head] = items[written];
             head = (head + 1) % SIZE;
-            count++;
-            written++;
+            count = count + 1u;
+            written = written + 1u;
         }
         return written;
     }
@@ -63,7 +63,7 @@ public:
         if (isEmpty()) return false;
         item = buffer[tail];
         tail = (tail + 1) % SIZE;
-        count--;
+        count = count - 1u;
         return true;
     }
 
@@ -79,8 +79,8 @@ public:
         while (readCount < len && !isEmpty()) {
             items[readCount] = buffer[tail];
             tail = (tail + 1) % SIZE;
-            count--;
-            readCount++;
+            count = count - 1u;
+            readCount = readCount + 1u;
         }
         return readCount;
     }
@@ -143,7 +143,9 @@ public:
      * @brief Clear all data from the buffer
      */
     void clear() {
-        head = tail = count = 0;
+        head = 0;
+        tail = 0;
+        count = 0;
     }
 
     // Query methods
