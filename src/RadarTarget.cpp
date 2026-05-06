@@ -88,7 +88,7 @@ int16_t RadarTarget::format(char* buffer, const uint16_t bufferLen, bool ignoreI
   if (!buffer || bufferLen < 30)
     return -1;
 
-  return static_cast<int16_t>(snprintf(buffer, bufferLen, 
+  return static_cast<int16_t>(snprintf(buffer, bufferLen,
             "T:%d:x=%+d:y=%+d:v=%+d:d=%d:l=%d:valid=%d",
             this->id, this->x, this->y, this->v, this->d, this->angle, this->valid));
 }
@@ -99,7 +99,7 @@ String RadarTarget::format(bool ignoreInvalid) const
   format(buffer, sizeof(buffer), ignoreInvalid);
   return String(buffer);
 }
-    
+
 String RadarTarget::toJson(bool ignoreInvalid) const
 {
   char buffer[256] = {'\0'};
@@ -107,7 +107,7 @@ String RadarTarget::toJson(bool ignoreInvalid) const
   if(charsCopied > 0) {
     return String(buffer);
   }
-  return String("");  
+  return String("");
 }
 
 int16_t RadarTarget::toJson(char* buffer, const uint16_t bufferLen, bool ignoreInvalid) const
@@ -117,7 +117,7 @@ int16_t RadarTarget::toJson(char* buffer, const uint16_t bufferLen, bool ignoreI
   if (!buffer || bufferLen < 30)
     return -1;
 
-  return snprintf(buffer, bufferLen, 
+  return snprintf(buffer, bufferLen,
      "{\"id\":%d,\"x\":%d,\"y\":%d,\"velocity\":%d,\"distance\":%d,"
       "\"angle\":%d,\"resolution\":%d,\"snr\":%d,\"valid\":%s}",
       this->id, this->x, this->y, this->v, this->d, this->angle,
@@ -130,7 +130,7 @@ int16_t RadarTarget::toJsonArray(const RadarTarget* targets, uint8_t targetsCoun
 
   if (!buffer || bufferLen <= 0)
     return -1;
-    
+
   buffer[0] = '[';
 
   for (i = 0; i < targetsCount && bytes_read < bytes_left; ++i) {
