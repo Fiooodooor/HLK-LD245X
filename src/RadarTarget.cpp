@@ -143,9 +143,9 @@ int16_t RadarTarget::toJsonArray(const RadarTarget* targets, uint8_t targetsCoun
       return -1;
   }
 
-  buffer[_min(bufferLen-2, bytes_read)] = ']';
+  buffer[min(bufferLen-2, bytes_read)] = ']';
   ++bytes_read;
-  buffer[_min(bufferLen-1, bytes_read)] = '\0';
+  buffer[min(bufferLen-1, bytes_read)] = '\0';
   ++bytes_read;
 
   if(bytes_read <= bufferLen)
