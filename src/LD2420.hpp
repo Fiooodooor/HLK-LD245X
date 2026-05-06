@@ -49,7 +49,7 @@ public:
     // Custom command range (0x0060–0x00A0)
     bool sendCustomCommand(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
 
-    const char* getFirmwareString() const;
+    const char* getLD2420FirmwareString() const { return this->ld2420_firmware_string; }
 
 private:
     bool sendLD2420Command(uint16_t cmd, const uint8_t* payload = nullptr, size_t payload_len = 0);
