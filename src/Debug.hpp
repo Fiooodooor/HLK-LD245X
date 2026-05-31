@@ -61,7 +61,7 @@ namespace esphome::ld245x
         printf(TRACE, true, format, args...); Serial.println(); }
 
     template<typename... Args> static void raw(const char* format, Args... args) {
-#if defined(ARDUINO_ARCH_AVR)
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_RP2040)
         char buffer[128];
         snprintf(buffer, sizeof(buffer), format, args...);
         Serial.print(buffer);
@@ -73,7 +73,7 @@ namespace esphome::ld245x
     static void print_ts(Level level=INFO, bool timeStamp=true) {
         if (level > DEBUG_LEVEL) return;
         if(timeStamp) {
-#if defined(ARDUINO_ARCH_AVR)
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_RP2040)
           Serial.print("[");
           Serial.print(millis());
           Serial.print("] ");
@@ -90,7 +90,7 @@ namespace esphome::ld245x
     template<typename... Args> static void printf(Level level, bool timeStamp, const char* format, Args... args) {
         if (level > DEBUG_LEVEL) return;
         if (timeStamp) { print_ts(level, timeStamp); }
-#if defined(ARDUINO_ARCH_AVR)
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_RP2040)
         char buffer[128];
         snprintf(buffer, sizeof(buffer), format, args...);
         Serial.print(buffer);
